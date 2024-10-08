@@ -214,14 +214,16 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 					fileStats.PassCount++
 				case "failed":
 					if !isQuarantined(testIdentifier, quarantineList) {
-						fileStats.FailCount++
+						log.Infoln(fmt.Sprintf("Not Quarantined test failed: %s", testIdentifier))
 					} else {
 						log.Infoln(fmt.Sprintf("Quarantined test failed: %s", testIdentifier))
 					}
+					fileStats.FailCount++
+					fileStats.ErrorCount++
 				case "skipped":
 					fileStats.SkippedCount++
-				case "error":
-					fileStats.ErrorCount++
+				// case "error":
+				// 	fileStats.ErrorCount++
 				}
 			}
 		}
