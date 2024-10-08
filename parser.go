@@ -189,7 +189,6 @@ func isURL(source string) bool {
 func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interface{}, log *logrus.Logger) (TestStats, error) {
 	files := getFiles(paths, log)
 	stats := TestStats{}
-	reportContent := "Test Report Summary (With Quarantine)\n====================================\n\n"
 
 	if len(files) == 0 {
 		log.Errorln("could not find any files matching the provided report path")
@@ -227,9 +226,6 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 				}
 			}
 		}
-		
-		reportContent += generateFileReport(file, fileStats)
-		
 		log.Infoln(fmt.Sprintf("File %s processed. Stats: Total: %d, Passed: %d, Failed: %d, Skipped: %d, Errors: %d",
 			file, fileStats.TestCount, fileStats.PassCount, fileStats.FailCount, fileStats.SkippedCount, fileStats.ErrorCount))
 		
@@ -240,16 +236,6 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 		stats.SkippedCount += fileStats.SkippedCount
 		stats.ErrorCount += fileStats.ErrorCount
 	}
-
-	reportContent += generateAggregateReport(stats)
-
-	err := os.WriteFile("test_report.txt", []byte(reportContent), 0644)
-	if err != nil {
-		log.WithError(err).Errorln("Failed to write report file")
-		return stats, fmt.Errorf("failed to write report file: %w", err)
-	}
-
-	log.Infoln("Report generated successfully: test_report.txt")
 
 	log.Infoln("Finished parsing tests with quarantine list")
 
@@ -286,14 +272,4 @@ func isQuarantined(testIdentifier string, quarantineList map[string]interface{})
 
 	log.Infoln(fmt.Sprintf("Test %s is not quarantined", testIdentifier))
 	return false
-}
-
-func generateFileReport(file string, stats TestStats) string {
-	return fmt.Sprintf("File: %s\nFAIL_COUNT: %d\nSKIPPED: %d\nERROR_COUNT: %d\nTEST_COUNT: %d\nPASS_COUNT: %d\n\n",
-		file, stats.FailCount, stats.SkippedCount, stats.ErrorCount, stats.TestCount, stats.PassCount)
-}
-
-func generateAggregateReport(stats TestStats) string {
-	return fmt.Sprintf("Aggregated Output\n=================\nFAIL_COUNT: %d\nSKIPPED: %d\nERROR_COUNT: %d\nTEST_COUNT: %d\nPASS_COUNT: %d\n",
-		stats.FailCount, stats.SkippedCount, stats.ErrorCount, stats.TestCount, stats.PassCount)
 }
