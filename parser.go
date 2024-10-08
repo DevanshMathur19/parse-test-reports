@@ -256,9 +256,15 @@ func isQuarantined(testIdentifier string, quarantineList map[string]interface{})
 
 	for _, test := range tests {
 		if testMap, ok := test.(map[interface{}]interface{}); ok {
-			if name, ok := testMap["name"].(string); ok && name == testIdentifier {
-				log.Infoln(fmt.Sprintf("Test %s is quarantined", testIdentifier))
-				return true
+			quarantinedClassname, classnameOk := testMap["classname"].(string)
+			quarantinedName, nameOk := testMap["name"].(string)
+
+			if classnameOk && nameOk {
+				quarantinedIdentifier := quarantinedClassname + "." + quarantinedName
+				if quarantinedIdentifier == testIdentifier {
+					log.Infoln(fmt.Sprintf("Test %s is quarantined", testIdentifier))
+					return true
+				}
 			}
 		}
 	}
