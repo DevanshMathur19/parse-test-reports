@@ -64,7 +64,7 @@ func (p Plugin) Exec() error {
 	// Handle the error after writing stats
 	if err != nil {
 		log.Errorln(fmt.Sprintf("Error while parsing tests: %s", err))
-		os.Exit(1)
+		return err // Return the error instead of calling os.Exit(1)
 	}
 
 	return nil
