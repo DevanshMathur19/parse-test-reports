@@ -64,13 +64,14 @@ func (p Plugin) Exec() error {
 	// Handle the error after writing stats
 	if err != nil {
 		log.Errorln(fmt.Sprintf("Error while parsing tests: %s", err))
-		return err // Return the error instead of calling os.Exit(1)
+		os.Exit(1)
 	}
 
 	return nil
 }
 
 func writeTestStats(stats TestStats, log *logrus.Logger) {
+	log.Infoln(fmt.Printf("Writing Test Stats to OUTPUT"))
 	statsMap := map[string]int{
 		"TEST_COUNT":  stats.TestCount,
 		"FAIL_COUNT":  stats.FailCount,
@@ -80,19 +81,21 @@ func writeTestStats(stats TestStats, log *logrus.Logger) {
 	}
 
 	for key, value := range statsMap {
-		if err := WriteEnvToFile(key, strconv.Itoa(value)); err != nil {
+		if err := WriteEnvToFile(key, strconv.Itoa(value), log); err != nil {
 			log.Errorln(fmt.Sprintf("Error writing %s: %s", key, err))
 		}
 	}
+	log.Infoln(fmt.Printf("Written Test Stats to OUTPUT"))
 }
 
 
-func WriteEnvToFile(key, value string) error {
+func WriteEnvToFile(key, value string, log *logrus.Logger) error {
 	outputFile, err := os.OpenFile(os.Getenv("DRONE_OUTPUT"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open output file: %w", err)
 	}
 	defer outputFile.Close()
+	log.Infoln(fmt.Sprintf("Writing Test Stats %s : %s in ENV Function.",key,value))
 	_, err = fmt.Fprintf(outputFile, "%s=%s\n", key, value)
 	if err != nil {
 		return fmt.Errorf("failed to write to env: %w", err)
