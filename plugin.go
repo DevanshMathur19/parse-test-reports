@@ -71,7 +71,6 @@ func (p Plugin) Exec() error {
 }
 
 func writeTestStats(stats TestStats, log *logrus.Logger) {
-	log.Infoln(fmt.Printf("Writing Test Stats to OUTPUT"))
 	statsMap := map[string]int{
 		"TEST_COUNT":  stats.TestCount,
 		"FAIL_COUNT":  stats.FailCount,
@@ -85,7 +84,6 @@ func writeTestStats(stats TestStats, log *logrus.Logger) {
 			log.Errorln(fmt.Sprintf("Error writing %s: %s", key, err))
 		}
 	}
-	log.Infoln(fmt.Printf("Written Test Stats to OUTPUT"))
 }
 
 
@@ -95,7 +93,7 @@ func WriteEnvToFile(key, value string, log *logrus.Logger) error {
 		return fmt.Errorf("failed to open output file: %w", err)
 	}
 	defer outputFile.Close()
-	log.Infoln(fmt.Sprintf("Writing Test Stats %s : %s in ENV Function.",key,value))
+	log.Infoln(fmt.Sprintf("Writing Test Stats %s : %s in func WriteEnvToFile to DRONE_OUTPUT",key,value))
 	_, err = fmt.Fprintf(outputFile, "%s=%s\n", key, value)
 	if err != nil {
 		return fmt.Errorf("failed to write to env: %w", err)
