@@ -85,14 +85,14 @@ func (p Plugin) Exec() error {
 		fmt.Println("Secret updated successfully.")
 	}
 
-	// // Example for testing DeleteSecret functionality
-	// err1 = harness.DeleteSecret("TEST_SECRET")
-	// if err1 != nil {
-	// 	fmt.Println("Failed to delete secret:", err1)
-	// 	os.Exit(1)
-	// } else {
-	// 	fmt.Println("Secret deleted successfully.")
-	// }
+	// Example for testing DeleteSecret functionality
+	err1 = harness.DeleteSecret("TEST_SECRET")
+	if err1 != nil {
+		fmt.Println("Failed to delete secret:", err1)
+		os.Exit(1)
+	} else {
+		fmt.Println("Secret deleted successfully.")
+	}
 
 	return nil
 }
