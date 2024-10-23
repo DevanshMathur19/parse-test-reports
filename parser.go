@@ -14,6 +14,8 @@ import (
 	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+	"github.com/DevanshMathur19/drone-plugin-lib/harness"
+
 )
 
 func getPaths(globVal string) []string {
@@ -252,8 +254,19 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	log.Infoln("Finished parsing tests with quarantine list")
 
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
-		return stats, fmt.Errorf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests)
+		errorMessage := fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests)
+		
+		// Use the SetError function to send the error message to the CI interface
+		err := harness.SetError(errorMessage)
+		if err != nil {
+			// Log the error if SetError fails
+			fmt.Printf("failed to set error: %v\n", err)
+		}
+	
+		// Return the error to propagate it as well
+		return stats, fmt.Errorf(errorMessage)
 	}
+	
 	return stats, nil
 }
 
