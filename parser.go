@@ -289,8 +289,15 @@ func isExpired(testIdentifier string, quarantineList map[string]interface{}, log
 }
 
 func matchTestIdentifier(testMap map[interface{}]interface{}, identifier string) (string, bool) {
-	if name, ok := testMap["name"].(string); ok && name == identifier {
-		return name, true
+	quarantinedClassname, classnameOk := testMap["classname"].(string)
+	quarantinedName, nameOk := testMap["name"].(string)
+
+	if classnameOk && nameOk {
+		quarantinedIdentifier := quarantinedClassname + "." + quarantinedName
+		if quarantinedIdentifier == identifier {
+			log.Infoln(fmt.Sprintf("Test %s is quarantined", identifier))
+			return quarantinedIdentifier, true
+		}
 	}
 	return "", false
 }
