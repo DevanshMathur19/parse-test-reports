@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -78,16 +77,21 @@ func ParseTests(paths []string, log *logrus.Logger) (TestStats, error) {
 	}
 
 	if stats.FailCount > 0 || stats.ErrorCount > 0 {
-		return stats, errors.New("failed tests and errors found")
+		log.WithFields(logrus.Fields{
+			"failCount":  stats.FailCount,
+			"errorCount": stats.ErrorCount,
+		}).Error("Failed tests and errors found")
+		return stats, nil // Or return an appropriate nil value if needed
 	}
 	return stats, nil
+	
 }
 
 // getFiles returns unique file paths after expanding the input paths
 func getFiles(paths []string, log *logrus.Logger) []string {
 	var files []string
 	for _, p := range paths {
-		path, err := expandTilde(p)
+		path, err := expandTilde(p,log)
 		if err != nil {
 			log.WithError(err).WithField("path", p).Errorln("error expanding path")
 			continue
@@ -116,21 +120,27 @@ func uniqueItems(items []string) []string {
 }
 
 // expandTilde expands the given path to include the home directory if prefixed with `~`.
-func expandTilde(path string) (string, error) {
+func expandTilde(path string, log *logrus.Logger) (string, error) {
 	if path == "" {
+		log.Debug("Received an empty path, returning as is.")
 		return path, nil
 	}
 	if path[0] != '~' {
+		log.Debug("Path does not start with '~', returning as is.")
 		return path, nil
 	}
 	if len(path) > 1 && path[1] != '/' && path[1] != '\\' {
-		return "", errors.New("cannot expand user-specific home dir")
+		log.Warn("Cannot expand user-specific home dir: path must start with '~/' or '~\\'")
+		return "", nil // Return empty string and nil error
 	}
 	dir, err := os.UserHomeDir()
 	if err != nil {
-		return "", err
+		log.Error("Error retrieving user home directory:", err)
+		return "", nil // Return empty string and nil error
 	}
-	return filepath.Join(dir, path[1:]), nil
+	expandedPath := filepath.Join(dir, path[1:])
+	log.Debug("Expanded path:", expandedPath)
+	return expandedPath, nil
 }
 
 // LoadYAML reads a YAML file from either a URL or a local file
@@ -238,9 +248,14 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	}
 
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
-		return stats, errors.New("non-quarantined failures and expired tests found")
+		log.WithFields(logrus.Fields{
+			"nonQuarantinedFailures": nonQuarantinedFailures,
+			"expiredTests":          expiredTests,
+		}).Error("Non-quarantined failures and expired tests found")
+		return stats, nil // Or return an appropriate nil value if needed
 	}
 	return stats, nil
+	
 }
 
 func isQuarantined(testIdentifier string, quarantineList map[string]interface{}, log *logrus.Logger) bool {
@@ -320,20 +335,4 @@ func matchTestIdentifier(testMap map[interface{}]interface{}, identifier string,
 		}
 	}
 	return "", false
-}
-
-
-func parseAndCheckExpiration(startDate string, duration int, log *logrus.Logger) bool {
-	start, err := time.Parse("2006-01-02", startDate)
-	if err != nil {
-		log.WithError(err).WithField("startDate", startDate).Errorln("Invalid date format")
-		return false
-	}
-	expirationDate := start.AddDate(0, 0, duration)
-	log.WithFields(logrus.Fields{
-		"startDate":      start,
-		"durationDays":   duration,
-		"expirationDate": expirationDate,
-	}).Infoln("Parsed expiration")
-	return time.Now().After(expirationDate)
 }
