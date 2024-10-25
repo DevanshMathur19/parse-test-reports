@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/harness-community/parse-test-reports/gojunit"
 	"github.com/mattn/go-zglob"
@@ -238,12 +239,12 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	}
 
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
-		log.WithFields(logrus.Fields{
-			"nonQuarantinedFailures": nonQuarantinedFailures,
-			"expiredTests":           expiredTests,
-		}).Error("Non-quarantined failures and expired tests found")
-		return stats, errors.New("non-quarantined failures and expired tests found")
+		// Construct the error message by concatenating string values
+		errorMessage := "Non-quarantined failures: " + strconv.Itoa(nonQuarantinedFailures) + 
+			", Expired tests: " + strconv.Itoa(expiredTests) + " found"
+		return stats, errors.New(errorMessage)
 	}
+	
 	return stats, nil
 }
 
