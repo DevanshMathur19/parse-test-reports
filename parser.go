@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -60,12 +61,12 @@ func ParseTests(paths []string, log *logrus.Logger) (TestStats, error) {
 			}
 		}
 		log.WithFields(logrus.Fields{
-			"file":        file,
-			"total":       fileStats.TestCount,
-			"passed":      fileStats.PassCount,
-			"failed":      fileStats.FailCount,
-			"skipped":     fileStats.SkippedCount,
-			"errors":      fileStats.ErrorCount,
+			"file":    file,
+			"total":   fileStats.TestCount,
+			"passed":  fileStats.PassCount,
+			"failed":  fileStats.FailCount,
+			"skipped": fileStats.SkippedCount,
+			"errors":  fileStats.ErrorCount,
 		}).Infoln("File processed")
 
 		// Aggregate stats
@@ -77,21 +78,16 @@ func ParseTests(paths []string, log *logrus.Logger) (TestStats, error) {
 	}
 
 	if stats.FailCount > 0 || stats.ErrorCount > 0 {
-		log.WithFields(logrus.Fields{
-			"failCount":  stats.FailCount,
-			"errorCount": stats.ErrorCount,
-		}).Error("Failed tests and errors found")
-		return stats, nil // Or return an appropriate nil value if needed
+		return stats, errors.New("failed tests and errors found")
 	}
 	return stats, nil
-	
 }
 
 // getFiles returns unique file paths after expanding the input paths
 func getFiles(paths []string, log *logrus.Logger) []string {
 	var files []string
 	for _, p := range paths {
-		path, err := expandTilde(p,log)
+		path, err := expandTilde(p)
 		if err != nil {
 			log.WithError(err).WithField("path", p).Errorln("error expanding path")
 			continue
@@ -120,27 +116,21 @@ func uniqueItems(items []string) []string {
 }
 
 // expandTilde expands the given path to include the home directory if prefixed with `~`.
-func expandTilde(path string, log *logrus.Logger) (string, error) {
+func expandTilde(path string) (string, error) {
 	if path == "" {
-		log.Debug("Received an empty path, returning as is.")
 		return path, nil
 	}
 	if path[0] != '~' {
-		log.Debug("Path does not start with '~', returning as is.")
 		return path, nil
 	}
 	if len(path) > 1 && path[1] != '/' && path[1] != '\\' {
-		log.Warn("Cannot expand user-specific home dir: path must start with '~/' or '~\\'")
-		return "", nil // Return empty string and nil error
+		return "", errors.New("cannot expand user-specific home dir")
 	}
 	dir, err := os.UserHomeDir()
 	if err != nil {
-		log.Error("Error retrieving user home directory:", err)
-		return "", nil // Return empty string and nil error
+		return "", err
 	}
-	expandedPath := filepath.Join(dir, path[1:])
-	log.Debug("Expanded path:", expandedPath)
-	return expandedPath, nil
+	return filepath.Join(dir, path[1:]), nil
 }
 
 // LoadYAML reads a YAML file from either a URL or a local file
@@ -232,12 +222,12 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 			}
 		}
 		log.WithFields(logrus.Fields{
-			"file":        file,
-			"total":       fileStats.TestCount,
-			"passed":      fileStats.PassCount,
-			"failed":      fileStats.FailCount,
-			"skipped":     fileStats.SkippedCount,
-			"errors":      fileStats.ErrorCount,
+			"file":    file,
+			"total":   fileStats.TestCount,
+			"passed":  fileStats.PassCount,
+			"failed":  fileStats.FailCount,
+			"skipped": fileStats.SkippedCount,
+			"errors":  fileStats.ErrorCount,
 		}).Infoln("File processed")
 
 		stats.TestCount += fileStats.TestCount
@@ -250,12 +240,11 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
 		log.WithFields(logrus.Fields{
 			"nonQuarantinedFailures": nonQuarantinedFailures,
-			"expiredTests":          expiredTests,
+			"expiredTests":           expiredTests,
 		}).Error("Non-quarantined failures and expired tests found")
-		return stats, nil // Or return an appropriate nil value if needed
+		return stats, errors.New("non-quarantined failures and expired tests found")
 	}
 	return stats, nil
-	
 }
 
 func isQuarantined(testIdentifier string, quarantineList map[string]interface{}, log *logrus.Logger) bool {
@@ -306,10 +295,10 @@ func isExpired(testIdentifier string, quarantineList map[string]interface{}, log
 
 					if currentDate.Before(startTime) || currentDate.After(endTime) {
 						log.WithFields(logrus.Fields{
-							"test": quarantinedIdentifier,
+							"test":        quarantinedIdentifier,
 							"currentDate": currentDate,
-							"startDate": startTime,
-							"endDate": endTime,
+							"startDate":   startTime,
+							"endDate":     endTime,
 						}).Infoln("Current Date lies outside start_date and end_date.")
 						return true
 					}
@@ -321,7 +310,6 @@ func isExpired(testIdentifier string, quarantineList map[string]interface{}, log
 	log.Infoln("Test has no expiration set:", testIdentifier)
 	return false
 }
-
 
 func matchTestIdentifier(testMap map[interface{}]interface{}, identifier string, log *logrus.Logger) (string, bool) {
 	quarantinedClassname, classnameOk := testMap["classname"].(string)
