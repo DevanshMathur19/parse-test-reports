@@ -272,21 +272,41 @@ func isExpired(testIdentifier string, quarantineList map[string]interface{}, log
 		if testMap, ok := test.(map[interface{}]interface{}); ok {
 			if quarantinedIdentifier, found := matchTestIdentifier(testMap, testIdentifier, log); found {
 				startDate, startOk := testMap["start_date"].(string)
-				duration, durationOk := testMap["duration"].(int)
-				if startOk && durationOk {
-					expirationDate := parseAndCheckExpiration(startDate, duration, log)
-					log.WithFields(logrus.Fields{
-						"test":           quarantinedIdentifier,
-						"expirationDate": expirationDate,
-					}).Infoln("Checking expiration for test")
-					return expirationDate
+				endDate, endOk := testMap["end_date"].(string)
+
+				if startOk && endOk {
+					currentDate := time.Now()
+
+					startTime, err := time.Parse("2006-01-02", startDate)
+					if err != nil {
+						log.WithError(err).Warnln("Failed to parse start_date")
+						continue
+					}
+
+					endTime, err := time.Parse("2006-01-02", endDate)
+					if err != nil {
+						log.WithError(err).Warnln("Failed to parse end_date")
+						continue
+					}
+
+					if currentDate.Before(startTime) || currentDate.After(endTime) {
+						log.WithFields(logrus.Fields{
+							"test": quarantinedIdentifier,
+							"currentDate": currentDate,
+							"startDate": startTime,
+							"endDate": endTime,
+						}).Infoln("Current Date lies outside start_date and end_date.")
+						return true
+					}
 				}
 			}
 		}
 	}
-	log.Infoln("Test has no expiration or duration set:", testIdentifier)
+
+	log.Infoln("Test has no expiration set:", testIdentifier)
 	return false
 }
+
 
 func matchTestIdentifier(testMap map[interface{}]interface{}, identifier string, log *logrus.Logger) (string, bool) {
 	quarantinedClassname, classnameOk := testMap["classname"].(string)
