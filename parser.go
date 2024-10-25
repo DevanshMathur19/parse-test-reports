@@ -252,7 +252,7 @@ func isQuarantined(testIdentifier string, quarantineList map[string]interface{},
 	}
 	for _, test := range tests {
 		if testMap, ok := test.(map[interface{}]interface{}); ok {
-			if quarantinedIdentifier, found := matchTestIdentifier(testMap, testIdentifier); found {
+			if quarantinedIdentifier, found := matchTestIdentifier(testMap, testIdentifier, log); found {
 				log.Infoln("Test is quarantined:", quarantinedIdentifier)
 				return true
 			}
@@ -270,7 +270,7 @@ func isExpired(testIdentifier string, quarantineList map[string]interface{}, log
 	}
 	for _, test := range tests {
 		if testMap, ok := test.(map[interface{}]interface{}); ok {
-			if quarantinedIdentifier, found := matchTestIdentifier(testMap, testIdentifier); found {
+			if quarantinedIdentifier, found := matchTestIdentifier(testMap, testIdentifier, log); found {
 				startDate, startOk := testMap["start_date"].(string)
 				duration, durationOk := testMap["duration"].(int)
 				if startOk && durationOk {
@@ -288,19 +288,20 @@ func isExpired(testIdentifier string, quarantineList map[string]interface{}, log
 	return false
 }
 
-func matchTestIdentifier(testMap map[interface{}]interface{}, identifier string) (string, bool) {
+func matchTestIdentifier(testMap map[interface{}]interface{}, identifier string, log *logrus.Logger) (string, bool) {
 	quarantinedClassname, classnameOk := testMap["classname"].(string)
 	quarantinedName, nameOk := testMap["name"].(string)
 
 	if classnameOk && nameOk {
 		quarantinedIdentifier := quarantinedClassname + "." + quarantinedName
 		if quarantinedIdentifier == identifier {
-			log.Infoln(fmt.Sprintf("Test %s is quarantined", identifier))
+			log.Infoln("Test", identifier, "is quarantined")
 			return quarantinedIdentifier, true
 		}
 	}
 	return "", false
 }
+
 
 func parseAndCheckExpiration(startDate string, duration int, log *logrus.Logger) bool {
 	start, err := time.Parse("2006-01-02", startDate)
