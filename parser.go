@@ -268,6 +268,7 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 		
 		// Convert the error details to a JSON string
 		errorJSON, err := json.Marshal(errorDetails)
+		fmt.Printf("Debug JSON error: %s\n", errorJSON)
 		if err != nil {
 			fmt.Printf("failed to marshal error details to JSON: %v\n", err)
 			return stats, fmt.Errorf("failed to marshal error details to JSON: %w", err)
