@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"encoding/json"
 
 	"github.com/harness-community/parse-test-reports/gojunit"
 	"github.com/mattn/go-zglob"
@@ -17,6 +18,11 @@ import (
 	"github.com/DevanshMathur19/drone-plugin-lib/harness"
 
 )
+
+type ErrorDetails struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
 func getPaths(globVal string) []string {
 	paths := make([]string, 0)
@@ -254,17 +260,28 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	log.Infoln("Finished parsing tests with quarantine list")
 
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
-		errorMessage := fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests)
+		// Construct the JSON error details
+		errorDetails := ErrorDetails{
+			Code:    1001, // Example error code
+			Message: fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests),
+		}
 		
-		// Use the SetError function to send the error message to the CI interface
-		err := harness.SetError(errorMessage)
+		// Convert the error details to a JSON string
+		errorJSON, err := json.Marshal(errorDetails)
+		if err != nil {
+			fmt.Printf("failed to marshal error details to JSON: %v\n", err)
+			return stats, fmt.Errorf("failed to marshal error details to JSON: %w", err)
+		}
+		
+		// Use the SetError function to send the JSON error message to the CI interface
+		err = harness.SetError(string(errorJSON))
 		if err != nil {
 			// Log the error if SetError fails
 			fmt.Printf("failed to set error: %v\n", err)
 		}
-	
+		
 		// Return the error to propagate it as well
-		return stats, fmt.Errorf(errorMessage)
+		return stats, fmt.Errorf("%s", errorJSON)
 	}
 	
 	return stats, nil
