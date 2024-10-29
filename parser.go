@@ -20,8 +20,8 @@ import (
 )
 
 type ErrorDetails struct {
-	Code    int    `json:"error_code"`
-	Message string `json:"error_message"`
+	ErrorCode    int    `json:"error_code"`
+	ErrorMessage string `json:"error_message"`
 }
 
 func getPaths(globVal string) []string {
@@ -260,10 +260,10 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	log.Infoln("Finished parsing tests with quarantine list")
 
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
-		// Construct the JSON error details
+		// Construct the JSON error details with error_code and error_message
 		errorDetails := ErrorDetails{
-			Code:    12345, // Example error code
-			Message: fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests),
+			ErrorCode:    12345, // Example error code
+			ErrorMessage: fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests),
 		}
 		
 		// Convert the error details to a JSON string
