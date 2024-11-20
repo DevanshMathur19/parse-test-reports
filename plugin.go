@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
 	"github.com/DevanshMathur19/drone-plugin-lib/harness"
+	"github.com/sirupsen/logrus"
 )
 
 type Plugin struct {
@@ -16,11 +16,11 @@ type Plugin struct {
 }
 
 type TestStats struct {
-	TestCount   int
-	FailCount   int
-	PassCount   int
+	TestCount    int
+	FailCount    int
+	PassCount    int
 	SkippedCount int
-	ErrorCount  int
+	ErrorCount   int
 }
 
 // Exec executes the plugin.
@@ -113,14 +113,13 @@ func writeTestStats(stats TestStats, log *logrus.Logger) {
 	}
 }
 
-
 func WriteEnvToFile(key, value string, log *logrus.Logger) error {
 	outputFile, err := os.OpenFile(os.Getenv("DRONE_OUTPUT"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open output file: %w", err)
 	}
 	defer outputFile.Close()
-	log.Infoln(fmt.Sprintf("Writing Test Stats %s : %s in func WriteEnvToFile to DRONE_OUTPUT",key,value))
+	log.Infoln(fmt.Sprintf("Writing Test Stats %s : %s in func WriteEnvToFile to DRONE_OUTPUT", key, value))
 	_, err = fmt.Fprintf(outputFile, "%s=%s\n", key, value)
 	if err != nil {
 		return fmt.Errorf("failed to write to env: %w", err)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -9,19 +10,18 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"encoding/json"
 
+	"github.com/DevanshMathur19/drone-plugin-lib/harness"
 	"github.com/harness-community/parse-test-reports/gojunit"
 	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
-	"github.com/DevanshMathur19/drone-plugin-lib/harness"
-
 )
 
 type ErrorDetails struct {
 	ErrorCode    int    `json:"error_code"`
 	ErrorMessage string `json:"error_message"`
+	ErrorCategory string `json:"error_category"`
 }
 
 func getPaths(globVal string) []string {
@@ -72,7 +72,7 @@ func ParseTests(paths []string, log *logrus.Logger) (TestStats, error) {
 		}
 		log.Infoln(fmt.Sprintf("File %s processed. Stats: Total: %d, Passed: %d, Failed: %d, Skipped: %d, Errors: %d",
 			file, fileStats.TestCount, fileStats.PassCount, fileStats.FailCount, fileStats.SkippedCount, fileStats.ErrorCount))
-		
+
 		// Aggregate stats
 		stats.TestCount += fileStats.TestCount
 		stats.PassCount += fileStats.PassCount
@@ -248,7 +248,7 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 		}
 		log.Infoln(fmt.Sprintf("File %s processed. Stats: Total: %d, Passed: %d, Failed: %d, Skipped: %d, Errors: %d",
 			file, fileStats.TestCount, fileStats.PassCount, fileStats.FailCount, fileStats.SkippedCount, fileStats.ErrorCount))
-		
+
 		// Aggregate stats
 		stats.TestCount += fileStats.TestCount
 		stats.PassCount += fileStats.PassCount
@@ -260,31 +260,42 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	log.Infoln("Finished parsing tests with quarantine list")
 
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
-		// Construct the JSON error details with error_code and error_message
-		errorDetails := ErrorDetails{
-			ErrorCode:    12345, // Example error code
-			ErrorMessage: fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests),
+		// Construct the error message with details
+		errorMessage := fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests)
+	
+		// Example error code
+		errorCode := 12345
+	
+		// Define an error category (you may need to modify this based on your specific context)
+		errorCategory := "TestFailure" // Adjust this based on your needs
+	
+		// Use the SetError function to send the error message, error code, and error category to the CI interface
+		err := harness.SetError(errorMessage, fmt.Sprintf("%d", errorCode), errorCategory)
+		if err != nil {
+			// Log the error if SetError fails
+			fmt.Printf("failed to set error: %v\n", err)
 		}
-		
-		// Convert the error details to a JSON string
+	
+		// Convert the error details to a JSON string for propagation
+		errorDetails := ErrorDetails{
+			ErrorCode:    errorCode,
+			ErrorMessage: errorMessage,
+			ErrorCategory: errorCategory,
+		}
+	
+		// Marshal the error details to a JSON string
 		errorJSON, err := json.Marshal(errorDetails)
 		fmt.Printf("Debug JSON error: %s\n", errorJSON)
 		if err != nil {
 			fmt.Printf("failed to marshal error details to JSON: %v\n", err)
 			return stats, fmt.Errorf("failed to marshal error details to JSON: %w", err)
 		}
-		
-		// Use the SetError function to send the JSON error message to the CI interface
-		err = harness.SetError(string(errorJSON))
-		if err != nil {
-			// Log the error if SetError fails
-			fmt.Printf("failed to set error: %v\n", err)
-		}
-		
-		// Return the error to propagate it as well
+	
+		// Return the error to propagate it
 		return stats, fmt.Errorf("%s", errorJSON)
 	}
 	
+
 	return stats, nil
 }
 
