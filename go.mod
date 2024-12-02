@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.4
 
 require (
-	github.com/DevanshMathur19/drone-plugin-lib v1.0.7
+	github.com/DevanshMathur19/drone-plugin-lib v1.0.9
 	github.com/harness/lite-engine v0.5.84
 	github.com/mattn/go-zglob v0.0.4
 	github.com/sirupsen/logrus v1.9.0
