@@ -19,8 +19,8 @@ import (
 )
 
 type ErrorDetails struct {
-	ErrorCode    int    `json:"error_code"`
-	ErrorMessage string `json:"error_message"`
+	ErrorCode     int    `json:"error_code"`
+	ErrorMessage  string `json:"error_message"`
 	ErrorCategory string `json:"error_category"`
 }
 
@@ -262,27 +262,27 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 	if nonQuarantinedFailures > 0 || expiredTests > 0 {
 		// Construct the error message with details
 		errorMessage := fmt.Sprintf("found %d non-quarantined failed tests and %d expired tests", nonQuarantinedFailures, expiredTests)
-	
+
 		// Example error code
 		errorCode := 12345
-	
+
 		// Define an error category (you may need to modify this based on your specific context)
 		errorCategory := "TestFailure" // Adjust this based on your needs
-	
-		// Use the SetError function to send the error message, error code, and error category to the CI interface
-		err := harness.SetError(errorMessage, fmt.Sprintf("%d", errorCode), errorCategory)
+
+		// Use the SetErrorMetadata function to send the error message, error code, and error category to the CI interface
+		err := harness.SetErrorMetadata(errorMessage, fmt.Sprintf("%d", errorCode), errorCategory)
 		if err != nil {
-			// Log the error if SetError fails
+			// Log the error if SetErrorMetadata fails
 			fmt.Printf("failed to set error: %v\n", err)
 		}
-	
+
 		// Convert the error details to a JSON string for propagation
 		errorDetails := ErrorDetails{
-			ErrorCode:    errorCode,
-			ErrorMessage: errorMessage,
+			ErrorCode:     errorCode,
+			ErrorMessage:  errorMessage,
 			ErrorCategory: errorCategory,
 		}
-	
+
 		// Marshal the error details to a JSON string
 		errorJSON, err := json.Marshal(errorDetails)
 		fmt.Printf("Debug JSON error: %s\n", errorJSON)
@@ -290,11 +290,10 @@ func ParseTestsWithQuarantine(paths []string, quarantineList map[string]interfac
 			fmt.Printf("failed to marshal error details to JSON: %v\n", err)
 			return stats, fmt.Errorf("failed to marshal error details to JSON: %w", err)
 		}
-	
+
 		// Return the error to propagate it
 		return stats, fmt.Errorf("%s", errorJSON)
 	}
-	
 
 	return stats, nil
 }
