@@ -94,7 +94,7 @@ func (p Plugin) Exec() error {
 	// 	fmt.Println("Secret deleted successfully.")
 	// }
 
-	err2 := harness.SetOutput("TEST_OUTPUT", "superoutput")
+	err2 := harness.SetOutput("TEST_OUTPUT", "superoutput\nsecondline\nthirdline\n")
 	if err2 != nil {
 		fmt.Println("Failed to set output:", err2)
 		os.Exit(1)
@@ -102,14 +102,21 @@ func (p Plugin) Exec() error {
 		fmt.Println("output set successfully.")
 	}
 
-	// // Example for testing Updateoutput functionality
-	// err2 = harness.UpdateOutput("TEST_OUTPUT", "updatedoutput")
-	// if err2 != nil {
-	// 	fmt.Println("Failed to update secret:", err2)
-	// 	os.Exit(1)
-	// } else {
-	// 	fmt.Println("Secret updated successfully.")
-	// }
+	err2 = harness.SetOutput("TEST_OUTPUT2", "newoutput\n4thline\n5thline\n")
+	if err2 != nil {
+		fmt.Println("Failed to set output:", err2)
+		os.Exit(1)
+	} else {
+		fmt.Println("output set successfully.")
+	}
+	// Example for testing Updateoutput functionality
+	err2 = harness.UpdateOutput("TEST_OUTPUT2", "\nupdatedoutput\nnextline")
+	if err2 != nil {
+		fmt.Println("Failed to update secret:", err2)
+		os.Exit(1)
+	} else {
+		fmt.Println("Secret updated successfully.")
+	}
 
 	// // Example for testing DeleteOutput functionality
 	// err2 = harness.DeleteOutput("TEST_OUTPUT")
