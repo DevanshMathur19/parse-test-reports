@@ -8,6 +8,8 @@ github.com/DevanshMathur19/drone-plugin-lib v1.0.9 h1:LYD/0AvS8OS1rvVmoLTbo3uKh4
 github.com/DevanshMathur19/drone-plugin-lib v1.0.9/go.mod h1:uZhK5kciP5ktGDeTdO88jeF9EjCigtLhQKgeWhtof1k=
 github.com/DevanshMathur19/drone-plugin-lib v1.0.10 h1:0GgAdDnRzabkZkkEM60lUOxS/UK4lXiozSwCu0p7HLA=
 github.com/DevanshMathur19/drone-plugin-lib v1.0.10/go.mod h1:uZhK5kciP5ktGDeTdO88jeF9EjCigtLhQKgeWhtof1k=
+github.com/DevanshMathur19/drone-plugin-lib v1.0.12 h1:FAX5lbIKsYSaMvYQ4srqQW4aPnRvkaPskgPvKLI7tnw=
+github.com/DevanshMathur19/drone-plugin-lib v1.0.12/go.mod h1:uZhK5kciP5ktGDeTdO88jeF9EjCigtLhQKgeWhtof1k=
 github.com/cpuguy83/go-md2man/v2 v2.0.2 h1:p1EgwI/C7NhT0JmVkwCD2ZBK8j4aeHQX2pMHHBfMQ6w=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=

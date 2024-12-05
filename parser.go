@@ -19,9 +19,9 @@ import (
 )
 
 type ErrorDetails struct {
-	ErrorCode     int    `json:"error_code"`
-	ErrorMessage  string `json:"error_message"`
-	ErrorCategory string `json:"error_category"`
+	ErrorCode     int    `json:"ERROR_CODE"`
+	ErrorMessage  string `json:"ERROR_MESSAGE"`
+	ErrorCategory string `json:"ERROR_CATEGORY"`
 }
 
 func getPaths(globVal string) []string {
