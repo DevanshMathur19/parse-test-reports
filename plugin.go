@@ -94,7 +94,7 @@ func (p Plugin) Exec() error {
 	// 	fmt.Println("Secret deleted successfully.")
 	// }
 
-	err2 := harness.SetOutput("TEST_OUTPUT", "superoutput\nsecond line\nthird line")
+	err2 := harness.SetOutput("TEST_OUTPUT", "superoutput")
 	if err2 != nil {
 		fmt.Println("Failed to set output:", err2)
 		os.Exit(1)
