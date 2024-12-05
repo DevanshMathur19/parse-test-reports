@@ -115,7 +115,7 @@ func (p Plugin) Exec() error {
 		fmt.Println("Failed to update secret:", err2)
 		os.Exit(1)
 	} else {
-		fmt.Println("Secret updated successfully.")
+		fmt.Println("output updated successfully.")
 	}
 
 	// // Example for testing DeleteOutput functionality
