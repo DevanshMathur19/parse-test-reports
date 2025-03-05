@@ -29,11 +29,11 @@ quarantine_tests:
     start_date: 2024-03-01
     end_date: 2026-07-01
     meta: Assertion failure - 2 != 1
-  - classname: pkg1.test.test_things.SomeTests
-    name: test_typeerr
-    start_date:
-    end_date:
-    meta: TypeError - oops
+  # - classname: pkg1.test.test_things.SomeTests
+  #   name: test_typeerr
+  #   start_date:
+  #   end_date:
+  #   meta: TypeError - oops
   - classname: pkg1.test.test_things.SomeTests
     name: test_gen_method:2
     start_date: 2024-02-01
@@ -69,8 +69,3 @@ quarantine_tests:
     start_date:
     end_date:
     meta: AssertionError
-  # - classname: pkg1.test.test_things.SomeTests
-  #   name: test_typeerr
-  #   start_date:
-  #   end_date:
-  #   meta: TypeError - oops
