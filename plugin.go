@@ -29,25 +29,25 @@ func (p Plugin) Exec() error {
 	log.Out = os.Stdout
 
 	if p.GlobPaths == "" {
-		log.Errorln(fmt.Errorf("%s plugin setting or %s environment variable is not set", globSetting, globEnv))
+		log.Errorf("%s plugin setting or %s environment variable is not set", globSetting, globEnv)
 		os.Exit(1)
 	}
 
 	paths := getPaths(p.GlobPaths)
-	log.Infoln(fmt.Sprintf("Parsing test cases in globs: %s", paths))
+	log.Infof("Parsing test cases in globs: %s", paths)
 
 	var stats TestStats
 	var err error
 
 	if p.FailOnQuarantine {
 		if p.QuarantineFile == "" {
-			log.Errorln(fmt.Errorf("fail_on_quarantine is true, but %s plugin setting or %s environment variable is not set", quarantineFileSetting, quarantineFileEnv))
+			log.Errorf("fail_on_quarantine is true, but %s plugin setting or %s environment variable is not set", quarantineFileSetting, quarantineFileEnv)
 			os.Exit(1)
 		}
 
 		quarantineList, loadErr := LoadYAML(p.QuarantineFile)
 		if loadErr != nil {
-			log.Errorln(fmt.Sprintf("Error loading quarantine file: %s", loadErr))
+			log.Errorf("Error loading quarantine file: %s", loadErr)
 			os.Exit(1)
 		}
 
@@ -59,12 +59,12 @@ func (p Plugin) Exec() error {
 	// Always write output variables, even if there was an error
 	writeTestStats(stats, log)
 
-	log.Infoln(fmt.Sprintf("Final test statistics: Total: %d, Passed: %d, Failed: %d, Skipped: %d, Errors: %d",
-		stats.TestCount, stats.PassCount, stats.FailCount, stats.SkippedCount, stats.ErrorCount))
+	log.Infof("Final test statistics: Total: %d, Passed: %d, Failed: %d, Skipped: %d, Errors: %d",
+		stats.TestCount, stats.PassCount, stats.FailCount, stats.SkippedCount, stats.ErrorCount)
 
 	// Handle the error after writing stats
 	if err != nil {
-		log.Errorln(fmt.Sprintf("Error while parsing tests: %s", err))
+		log.Errorf("Error while parsing tests: %s", err)
 		os.Exit(1)
 	}
 
@@ -132,16 +132,16 @@ func (p Plugin) Exec() error {
 
 func writeTestStats(stats TestStats, log *logrus.Logger) {
 	statsMap := map[string]int{
-		"TEST_COUNT":  stats.TestCount,
-		"FAIL_COUNT":  stats.FailCount,
-		"PASS_COUNT":  stats.PassCount,
-		"SKIPPED":     stats.SkippedCount,
-		"ERROR_COUNT": stats.ErrorCount,
+		"TOTAL_TESTS":   stats.TestCount,
+		"FAILED_TESTS":  stats.FailCount,
+		"PASSED_TESTS":  stats.PassCount,
+		"SKIPPED_TESTS": stats.SkippedCount,
+		"ERROR_TESTS":   stats.ErrorCount,
 	}
 
 	for key, value := range statsMap {
 		if err := WriteEnvToFile(key, strconv.Itoa(value), log); err != nil {
-			log.Errorln(fmt.Sprintf("Error writing %s: %s", key, err))
+			log.Errorf("Error writing %s: %s", key, err)
 		}
 	}
 }
@@ -149,13 +149,15 @@ func writeTestStats(stats TestStats, log *logrus.Logger) {
 func WriteEnvToFile(key, value string, log *logrus.Logger) error {
 	outputFile, err := os.OpenFile(os.Getenv("DRONE_OUTPUT"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to open output file: %w", err)
+		log.Errorf("Failed to open output file: %v", err)
+		return err
 	}
 	defer outputFile.Close()
 	log.Infoln(fmt.Sprintf("Writing Test Stats %s : %s in func WriteEnvToFile to DRONE_OUTPUT", key, value))
 	_, err = fmt.Fprintf(outputFile, "%s=%s\n", key, value)
 	if err != nil {
-		return fmt.Errorf("failed to write to env: %w", err)
+		log.Errorf("Failed to write to env: %v", err)
+		return err
 	}
 	return nil
 }
